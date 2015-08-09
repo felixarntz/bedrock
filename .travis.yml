@@ -15,4 +15,4 @@ before_install:
   - phpenv rehash
 
 script:
-  - phpcs --standard=ruleset.xml --extensions=php --ignore=web/wp/,vendor/ -n -s .
+  - phpcs --standard=ruleset.xml --extensions=php --ignore=web/core/,vendor/ -n -s .

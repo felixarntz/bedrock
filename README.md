@@ -35,10 +35,10 @@ Use [Trellis](https://github.com/roots/trellis) for additional features:
   * `DB_HOST` - Database host
   * `WP_ENV` - Set to environment (`development`, `staging`, `production`)
   * `WP_HOME` - Full URL to WordPress home (http://example.com)
-  * `WP_SITEURL` - Full URL to WordPress including subdirectory (http://example.com/wp)
+  * `WP_SITEURL` - Full URL to WordPress including subdirectory (http://example.com/core)
 4. Add theme(s) in `web/app/themes` as you would for a normal WordPress site.
 4. Set your site vhost document root to `/path/to/site/web/` (`/path/to/site/current/web/` if using deploys)
-5. Access WP admin at `http://example.com/wp/wp-admin`
+5. Access WP admin at `http://example.com/core/wp-admin`
 
 ## Deploys
 

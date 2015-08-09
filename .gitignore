@@ -1,4 +1,5 @@
 # Application
+web/app/debug.log
 web/app/plugins/*
 !web/app/plugins/.gitkeep
 web/app/mu-plugins/*
@@ -6,12 +7,13 @@ web/app/mu-plugins/*
 web/app/upgrade
 web/app/uploads/*
 !web/app/uploads/.gitkeep
-!web/app/mu-plugins/disallow-indexing.php
-!web/app/mu-plugins/register-theme-directory.php
-!web/app/mu-plugins/bedrock-autoloader.php
+
+# Ignore Exceptions
+!web/app/mu-plugins/wpprsc.php
+!web/app/mu-plugins/WPPRSC
 
 # WordPress
-web/wp
+web/core
 web/.htaccess
 
 # WP-CLI
@@ -24,6 +26,7 @@ sql-dump-*.sql
 !.env.example
 
 # Vendor (e.g. Composer)
+composer.lock
 vendor/*
 !vendor/.gitkeep
 
