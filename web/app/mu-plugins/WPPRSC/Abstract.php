@@ -3,7 +3,7 @@
 namespace WPPRSC;
 
 abstract class Abstract {
-	private static $instances = array();
+	protected static $instances = array();
 
 	public static function instance() {
 		$class = get_called_class();
@@ -19,4 +19,6 @@ abstract class Abstract {
 	protected function __construct() {
 
 	}
+
+	public abstract function run();
 }

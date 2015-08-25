@@ -14,6 +14,9 @@ class PluginAutoloader extends \WPPRSC\Abstract {
 	protected $relative_path;
 
 	protected function __construct() {
+	}
+
+	public function run() {
 		$this->relative_path = '/../' . basename( untrailingslashit( wpprsc_get_path() ) );
 
 		if ( is_admin() ) {

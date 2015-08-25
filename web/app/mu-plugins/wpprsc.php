@@ -16,16 +16,23 @@ function wpprsc_init() {
 		'ThemeFallback',
 	);
 	foreach ( $wpprsc_base as $class ) {
-		call_user_func( array( 'WPPRSC\\Base\\' . $class, 'instance' ) );
+		call_user_func( array( 'WPPRSC\\Base\\' . $class, 'instance' ) )->run();
 	}
 }
 wpprsc_init();
 
 function wpprsc_modules_init() {
-	$wpprsc_modules = array();
-	foreach ( $wpprsc_modules as $constant => $class ) {
-		if ( defined( $constant ) && constant( $constant ) ) {
-			call_user_func( array( 'WPPRSC\\Modules\\' . $class, 'instance' ) );
+	$wpprsc_modules = array(
+		'auto_updater'		=> 'AutoUpdater',
+		'github_updater'	=> 'GithubUpdater',
+	);
+	foreach ( $wpprsc_modules as $setting => $class ) {
+		$args = wpprsc_get_setting( 'module_' . $setting );
+		if ( $args ) {
+			if ( ! is_array( $args ) ) {
+				$args = array();
+			}
+			call_user_func( array( 'WPPRSC\\Modules\\' . $class, 'instance' ), $args )->run();
 		}
 	}
 }
@@ -37,4 +44,12 @@ function wpprsc_get_path( $relative_path = '' ) {
 
 function wpprsc_get_url( $relative_path = '' ) {
 	return plugin_dir_url( __FILE__ ) . $relative_path;
+}
+
+function wpprsc_get_info( $field = null ) {
+	return WPPRSC\Base\Config::instance()->get_info( $field );
+}
+
+function wpprsc_get_setting( $setting, $default = false ) {
+	return WPPRSC\Base\Config::instance()->get_setting( $setting, $default );
 }

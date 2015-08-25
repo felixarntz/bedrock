@@ -9,6 +9,6 @@ if ( version_compare( phpversion(), '5.4.0', '<' ) ) {
 
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
-\WPPRSC\Base\Config::instance();
+\WPPRSC\Base\Config::instance()->run();
 
 require_once ABSPATH . 'wp-settings.php';

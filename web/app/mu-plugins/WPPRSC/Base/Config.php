@@ -6,10 +6,29 @@
 namespace WPPRSC\Base;
 
 class Config extends \WPPRSC\Abstract {
+	/**
+	 * Data required for constants definition
+	 * @var array
+	 */
 	protected $data;
 
+	/**
+	 * Information about project (read from Composer)
+	 * @var array
+	 */
+	protected $info;
+
+	/**
+	 * Additional settings (read from Composer)
+	 * @var array
+	 */
+	protected $settings;
+
 	protected function __construct() {
-		$this->data = array();
+	}
+
+	public function run() {
+		$this->data = $this->info = $this->settings = array();
 
 		$this->data['content_dir'] = str_replace( '/mu-plugins/WPPRSC/Base', '', dirname( __FILE__ ) );
 		$this->data['webroot_dir'] = dirname( $this->data['content_dir'] );
@@ -43,6 +62,24 @@ class Config extends \WPPRSC\Abstract {
 		$this->apply_globals();
 	}
 
+	public function get_info( $field = null ) {
+		if ( $field !== null ) {
+			if ( isset( $this->info[ $field ] ) ) {
+				return $this->info[ $field ];
+			}
+			return false;
+		}
+
+		return $this->info;
+	}
+
+	public function get_setting( $key, $default = false ) {
+		if ( isset( $this->settings[ $setting ] ) ) {
+			return $this->settings[ $setting ];
+		}
+		return $default;
+	}
+
 	protected function load_dotenv() {
 		$dotenv = new \Dotenv\Dotenv( $this->data['root_dir'] );
 		if ( file_exists( $this->data['root_dir'] . '/.env' ) ) {
@@ -60,11 +97,28 @@ class Config extends \WPPRSC\Abstract {
 
 		}
 
+		$info_fields = array(
+			'name', 'version', 'description', 'type', 'license', 'homepage', 'authors', 'keywords'
+		);
+		foreach ( $info_fields as $info_field ) {
+			if ( isset( $composer[ $info_field ] ) ) {
+				$this->info[ $info_field ] = $composer[ $info_field ];
+			}
+		}
+
 		$this->data['composer'] = array();
-		if ( isset( $composer['extra'] ) && isset( $composer['extra']['settings'] ) ) {
-			foreach ( $composer['extra']['settings'] as $constant => $value ) {
-				if ( ! is_array( $value ) ) {
-					$this->data['composer'][ $this->normalize_constant( $constant ) ] = $value;
+		if ( isset( $composer['extra'] ) ) {
+			if ( isset( $composer['extra']['constants'] ) ) {
+				foreach ( $composer['extra']['constants'] as $constant => $value ) {
+					if ( ! is_array( $value ) ) {
+						$this->data['composer'][ $this->normalize_constant( $constant ) ] = $value;
+					}
+				}
+			}
+
+			if ( isset( $composer['extra']['settings'] ) ) {
+				foreach ( $composer['extra']['settings'] as $setting => $value ) {
+					$this->settings[ $setting ] = $this->normalize_value( $value );
 				}
 			}
 		}
@@ -120,9 +174,6 @@ class Config extends \WPPRSC\Abstract {
 			'WP_DEBUG_DISPLAY',
 			'SCRIPT_DEBUG',
 			'SAVEQUERIES',
-			'DISALLOW_FILE_EDIT',
-			'DISALLOW_FILE_MODS',
-			'AUTOMATIC_UPDATER_DISABLED',
 			'ABSPATH',
 		);
 	}
@@ -161,10 +212,10 @@ class Config extends \WPPRSC\Abstract {
 			'WP_DEBUG_DISPLAY'				=> 'development' === $this->data['wp_env'],
 			'SCRIPT_DEBUG'					=> 'development' === $this->data['wp_env'],
 			'SAVEQUERIES'					=> 'development' === $this->data['wp_env'],
+			// Custom Settings
 			'DISALLOW_FILE_EDIT'			=> true,
 			'DISALLOW_FILE_MODS'			=> true,
 			'AUTOMATIC_UPDATER_DISABLED'	=> true,
-			// Custom Settings
 			'AUTOSAVE_INTERVAL'				=> null,
 			'COMPRESS_CSS'					=> null,
 			'COMPRESS_SCRIPTS'				=> null,
@@ -213,6 +264,14 @@ class Config extends \WPPRSC\Abstract {
 	}
 
 	protected function normalize_value( $value ) {
+		if ( is_array( $value ) ) {
+			$normalized = array();
+			foreach ( $value as $k => $v ) {
+				$normalized[ $k ] = $this->normalize_value( $v );
+			}
+			return $normalized;
+		}
+
 		switch ( $value ) {
 			case 'TRUE':
 			case 'true':

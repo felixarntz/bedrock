@@ -7,6 +7,9 @@ namespace WPPRSC\Base;
 
 class Sunrise extends \WPPRSC\Abstract {
 	protected function __construct() {
+	}
+
+	public function run() {
 		//TODO
 	}
 }
