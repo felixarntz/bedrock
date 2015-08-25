@@ -11,6 +11,12 @@ class GithubUpdater extends \WPPRSC\ModuleAbstract {
 	}
 
 	public function run() {
+		if ( $this->args['extended_naming'] ) {
+			if ( ! defined( 'GITHUB_UPDATER_EXTENDED_NAMING' ) ) {
+				define( 'GITHUB_UPDATER_EXTENDED_NAMING', true );
+			}
+		}
+
 		if ( is_array( $this->args['token_distribution'] ) && $this->args['token_distribution'] ) {
 			add_filter( 'github_updater_token_distribution', array( $this, 'filter_token_distribution' ) );
 		}
@@ -26,6 +32,7 @@ class GithubUpdater extends \WPPRSC\ModuleAbstract {
 
 	protected function get_default_args() {
 		return array(
+			'extended_naming'		=> false,
 			'token_distribution'	=> array(),
 			'hide_settings'			=> false,
 		);
