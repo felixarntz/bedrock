@@ -11,10 +11,32 @@ class ClientRole extends \WPPRSC\ModuleAbstract {
 	}
 
 	public function run() {
-		//TODO
+		add_action( 'init', array( $this, 'add_role' ), 1 );
+	}
+
+	public function add_role() {
+		$role = get_role( 'client' );
+		if ( null !== $role ) {
+			return;
+		}
+
+		$editor = get_role( 'editor' );
+
+		$slug = 'client';
+		$display_name = $this->args['display_name'];
+		$new_capabilities = array(
+			'switch_themes'			=> true,
+			'edit_theme_options'	=> true,
+			'activate_plugins'		=> true,
+			'manage_options'		=> true,
+		);
+
+		add_role( $slug, $display_name, array_merge( $editor->capabilities, $new_capabilities ) );
 	}
 
 	protected function get_default_args() {
-		return array();
+		return array(
+			'display_name'			=> 'Client',
+		);
 	}
 }

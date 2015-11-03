@@ -11,7 +11,9 @@ class Security extends \WPPRSC\ModuleAbstract {
 	}
 
 	public function run() {
-		//TODO
+		if ( $this->args['disable_xmlrpc'] ) {
+			add_filter( 'xmlrpc_enabled', '__return_false' );
+		}
 	}
 
 	protected function get_default_args() {

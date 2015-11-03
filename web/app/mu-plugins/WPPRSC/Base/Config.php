@@ -233,6 +233,7 @@ class Config extends \WPPRSC\Abstract {
 			'WP_POST_REVISIONS'				=> null,
 			'WP_MAX_MEMORY_LIMIT'			=> null,
 			'WP_MEMORY_LIMIT'				=> null,
+			'ALLOW_UNFILTERED_UPLOADS'		=> null,
 			// Multisite
 			'WP_ALLOW_MULTISITE'			=> null,
 			'MULTISITE'						=> null,

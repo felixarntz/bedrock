@@ -25,6 +25,7 @@ function wpprsc_modules_init() {
 	$wpprsc_modules = array(
 		'auto_updater'		=> 'AutoUpdater',
 		'client_role'		=> 'ClientRole',
+		'content_fixes'		=> 'ContentFixes',
 		'frontend_cleanup'	=> 'FrontendCleanup',
 		'github_updater'	=> 'GithubUpdater',
 		'git_manager'		=> 'GitManager',

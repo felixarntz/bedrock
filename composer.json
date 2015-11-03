@@ -67,6 +67,27 @@
         "plugin": false,
         "theme": false,
         "translation": true
+      },
+      "module_client_role": {
+        "display_name": "Client"
+      },
+      "module_content_fixes": {
+        "disable_posts": false,
+        "disable_comments": false,
+        "disable_pingbacks": true
+      },
+      "module_frontend_cleanup": {
+        "clean_feed_links": false,
+        "clean_feed_links_extra": false,
+        "clean_rsd_link": true,
+        "clean_wlwmanifest_link": true,
+        "clean_wp_generator": true,
+        "clean_asset_versions": true,
+        "clean_img_dimensions": true,
+        "improve_html5_support": true
+      },
+      "module_security": {
+        "disable_xmlrpc": true
       }
     }
   }
