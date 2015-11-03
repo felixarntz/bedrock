@@ -24,7 +24,11 @@ wpprsc_init();
 function wpprsc_modules_init() {
 	$wpprsc_modules = array(
 		'auto_updater'		=> 'AutoUpdater',
+		'client_role'		=> 'ClientRole',
+		'frontend_cleanup'	=> 'FrontendCleanup',
 		'github_updater'	=> 'GithubUpdater',
+		'git_manager'		=> 'GitManager',
+		'security'			=> 'Security',
 	);
 	foreach ( $wpprsc_modules as $setting => $class ) {
 		$args = wpprsc_get_setting( 'module_' . $setting );

@@ -48,6 +48,7 @@
     "vlucas/phpdotenv": "2.0.1",
     "johnpbloch/wordpress": "4.3",
     "afragen/github-updater": "5.0.1",
+    "wpackagist-plugin/wp-multi-network": "1.6.0",
     "wpackagist-plugin/wordpress-seo": "2.3.4"
   },
   "extra": {
