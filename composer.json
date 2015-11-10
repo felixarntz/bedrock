@@ -49,11 +49,13 @@
     "johnpbloch/wordpress": "4.3.1",
     "afragen/github-updater": "5.0.1",
     "wpackagist-plugin/wp-multi-network": "1.6.0",
-    "wpackagist-plugin/wordpress-seo": "2.3.4"
+    "wpackagist-plugin/wordpress-seo": "2.3.5",
+    "felixarntz/options-definitely": "0.5.0",
+    "felixarntz/post-types-definitely": "0.5.0"
   },
   "extra": {
     "installer-paths": {
-      "web/app/mu-plugins/{$name}/": ["type:wordpress-muplugin"],
+      "web/app/mu-plugins/{$name}/": ["type:wordpress-muplugin", "felixarntz/options-definitely", "felixarntz/post-types-definitely"],
       "web/app/plugins/{$name}/": ["type:wordpress-plugin"],
       "web/app/themes/{$name}/": ["type:wordpress-theme"]
     },
