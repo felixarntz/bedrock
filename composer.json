@@ -1,7 +1,7 @@
 {
   "name": "felixarntz/bedrock",
   "type": "project",
-  "license": "GPLv2",
+  "license": "GPLv3",
   "description": "A modern WordPress stack",
   "homepage": "https://roots.io/bedrock/",
   "authors": [
@@ -38,13 +38,13 @@
     }
   ],
   "autoload": {
-    "psr-0": {
-      "WPPRSC\\": "web/app/mu-plugins/"
+    "psr-4": {
+      "WPPRSC\\": "web/app/mu-plugins/WPPRSC/"
     }
   },
   "require": {
     "php": ">=5.4",
-    "composer/installers": "1.0.21",
+    "composer/installers": "~1.0",
     "vlucas/phpdotenv": "2.0.1",
     "johnpbloch/wordpress": "4.3",
     "afragen/github-updater": "5.0.1",

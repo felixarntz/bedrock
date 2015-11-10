@@ -5,7 +5,7 @@
 
 namespace WPPRSC\Base;
 
-class PluginAutoloader extends \WPPRSC\Abstract {
+class PluginAutoloader extends \WPPRSC\BaseAbstract {
 	protected $cache;
 	protected $auto_plugins;
 	protected $mu_plugins;
@@ -17,6 +17,10 @@ class PluginAutoloader extends \WPPRSC\Abstract {
 	}
 
 	public function run() {
+		if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
+			return;
+		}
+
 		$this->relative_path = '/../' . basename( untrailingslashit( wpprsc_get_path() ) );
 
 		if ( is_admin() ) {
@@ -79,7 +83,7 @@ class PluginAutoloader extends \WPPRSC\Abstract {
 		$this->activated = $rebuild ? $plugins : array_diff_key( $plugins, $this->cache['plugins'] );
 		$this->cache = array( 'plugins' => $plugins, 'count' => $this->count_plugins() );
 
-		update_site_option( 'wpprsc_plugin_autoloader' );
+		update_site_option( 'wpprsc_plugin_autoloader', $this->cache );
 	}
 
 	protected function plugin_hooks() {

@@ -5,7 +5,7 @@
 
 namespace WPPRSC\Base;
 
-class Config extends \WPPRSC\Abstract {
+class Config extends \WPPRSC\BaseAbstract {
 	/**
 	 * Data required for constants definition
 	 * @var array
@@ -74,8 +74,8 @@ class Config extends \WPPRSC\Abstract {
 	}
 
 	public function get_setting( $key, $default = false ) {
-		if ( isset( $this->settings[ $setting ] ) ) {
-			return $this->settings[ $setting ];
+		if ( isset( $this->settings[ $key ] ) ) {
+			return $this->settings[ $key ];
 		}
 		return $default;
 	}
@@ -102,7 +102,7 @@ class Config extends \WPPRSC\Abstract {
 		);
 		foreach ( $info_fields as $info_field ) {
 			if ( isset( $composer[ $info_field ] ) ) {
-				$this->info[ $info_field ] = $composer[ $info_field ];
+				$this->info[ $info_field ] = $composer[ $info_field ];
 			}
 		}
 
@@ -139,7 +139,7 @@ class Config extends \WPPRSC\Abstract {
 			if ( ! defined( $constant ) && $default !== null ) {
 				if ( is_string( $default ) ) {
 					$default = preg_replace_callback( '/\{\{([A-Z_]+)\}\}/', function( $matches ) {
-						if ( isset( $matches[1] ) && defined( $matches[1] ) ) {
+						if ( isset( $matches[1] ) && defined( $matches[1] ) ) {
 							return constant( $matches[1] );
 						}
 						return '';

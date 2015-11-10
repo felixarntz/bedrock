@@ -2,7 +2,7 @@
 
 namespace WPPRSC;
 
-abstract class Abstract {
+abstract class BaseAbstract {
 	protected static $instances = array();
 
 	public static function instance() {

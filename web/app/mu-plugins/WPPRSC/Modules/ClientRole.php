@@ -11,6 +11,10 @@ class ClientRole extends \WPPRSC\ModuleAbstract {
 	}
 
 	public function run() {
+		if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
+			return;
+		}
+
 		add_action( 'init', array( $this, 'add_role' ), 1 );
 	}
 

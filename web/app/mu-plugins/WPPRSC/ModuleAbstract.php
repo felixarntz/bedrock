@@ -2,7 +2,7 @@
 
 namespace WPPRSC;
 
-abstract class ModuleAbstract extends \WPPRSC\Abstract {
+abstract class ModuleAbstract extends \WPPRSC\BaseAbstract {
 	protected $validated = false;
 	protected $args = array();
 
@@ -21,8 +21,6 @@ abstract class ModuleAbstract extends \WPPRSC\Abstract {
 	protected function __construct( $args = array() ) {
 		$this->set_args( $args );
 	}
-
-	public abstract function run();
 
 	public function set_args( $args = array() ) {
 		if ( ! $args ) {
@@ -48,6 +46,4 @@ abstract class ModuleAbstract extends \WPPRSC\Abstract {
 
 		$this->validated = true;
 	}
-
-	protected abstract function get_default_args();
 }

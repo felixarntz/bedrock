@@ -5,7 +5,7 @@
 
 namespace WPPRSC\Base;
 
-class ThemeFallback extends \WPPRSC\Abstract {
+class ThemeFallback extends \WPPRSC\BaseAbstract {
 	protected function __construct() {
 	}
 

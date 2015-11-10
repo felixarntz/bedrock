@@ -5,7 +5,7 @@
 
 namespace WPPRSC\Base;
 
-class Sunrise extends \WPPRSC\Abstract {
+class Sunrise extends \WPPRSC\BaseAbstract {
 	protected function __construct() {
 	}
 
