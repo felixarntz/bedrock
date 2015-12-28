@@ -23,6 +23,7 @@ wpprsc_init();
 
 function wpprsc_modules_init() {
 	$wpprsc_modules = array(
+		'api_manager'		=> 'APIManager',
 		'auto_updater'		=> 'AutoUpdater',
 		'client_role'		=> 'ClientRole',
 		'content_fixes'		=> 'ContentFixes',

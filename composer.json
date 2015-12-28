@@ -62,6 +62,10 @@
     "wordpress-install-dir": "web/core",
     "constants": {},
     "settings": {
+      "module_api_manager": {
+        "enabled": true,
+        "url_prefix": "api"
+      },
       "module_auto_updater": {
         "core_major": false,
         "core_minor": true,
@@ -84,6 +88,10 @@
         "clean_rsd_link": true,
         "clean_wlwmanifest_link": true,
         "clean_wp_generator": true,
+        "clean_wp_api": false,
+        "clean_wp_embed": false,
+        "clean_emoji": false,
+        "clean_recent_comments_style": false,
         "clean_asset_versions": true,
         "clean_img_dimensions": true,
         "improve_html5_support": true

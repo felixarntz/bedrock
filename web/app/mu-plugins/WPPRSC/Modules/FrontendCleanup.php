@@ -34,6 +34,30 @@ class FrontendCleanup extends \WPPRSC\ModuleAbstract {
 			}
 		}
 
+		if ( $this->args['clean_wp_api'] ) {
+			remove_action( 'wp_head', 'rest_output_link_wp_head', 10 );
+		}
+
+		if ( $this->args['clean_wp_embed'] ) {
+			remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
+			remove_action( 'wp_head', 'wp_oembed_add_host_js' );
+		}
+
+		if ( $this->args['clean_emoji'] ) {
+			remove_action( 'admin_print_styles', 'print_emoji_styles' );
+			remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+			remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+			remove_action( 'wp_print_styles', 'print_emoji_styles' );
+			remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+			remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+			remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+			add_filter( 'tiny_mce_plugins', array( $this, 'disable_emojicons_tinymce' ) );
+		}
+
+		if ( $this->args['clean_recent_comments_style'] ) {
+			add_action( 'widgets_init', array( $this, 'remove_recent_comments_style' ) );
+		}
+
 		if ( $this->args['clean_asset_versions'] ) {
 			add_filter( 'style_loader_src', array( $this, 'strip_version_arg' ), 10, 2 );
 			add_filter( 'script_loader_src', array( $this, 'strip_version_arg' ), 10, 2 );
@@ -121,16 +145,36 @@ class FrontendCleanup extends \WPPRSC\ModuleAbstract {
 		echo $this->remove_self_closing_tag( ob_get_clean() );
 	}
 
+	public function disable_emojicons_tinymce( $plugins ) {
+		if ( ! is_array( $plugins ) ) {
+			return array();
+		}
+
+		return array_diff( $plugins, array( 'wpemoji' ) );
+	}
+
+	public function remove_recent_comments_style() {
+		global $wp_widget_factory;
+
+		if ( isset( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'] ) ) {
+			remove_action( 'wp_head', array( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'], 'recent_comments_style' ) );
+		}
+	}
+
 	protected function get_default_args() {
 		return array(
-			'clean_feed_links'			=> false,
-			'clean_feed_links_extra'	=> false,
-			'clean_rsd_link'			=> false,
-			'clean_wlwmanifest_link'	=> false,
-			'clean_wp_generator'		=> false,
-			'clean_asset_versions'		=> false,
-			'clean_img_dimensions'		=> false,
-			'improve_html5_support'		=> false,
+			'clean_feed_links'				=> false,
+			'clean_feed_links_extra'		=> false,
+			'clean_rsd_link'				=> false,
+			'clean_wlwmanifest_link'		=> false,
+			'clean_wp_generator'			=> false,
+			'clean_wp_api'					=> false,
+			'clean_wp_embed'				=> false,
+			'clean_emoji'					=> false,
+			'clean_recent_comments_style'	=> false,
+			'clean_asset_versions'			=> false,
+			'clean_img_dimensions'			=> false,
+			'improve_html5_support'			=> false,
 		);
 	}
 }
