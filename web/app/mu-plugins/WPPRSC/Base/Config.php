@@ -53,7 +53,7 @@ class Config extends \WPPRSC\BaseAbstract {
 		$this->load_composer();
 
 		$this->data['wp_env'] = $this->get_constant_setting( 'WP_ENV' );
-		if ( $this->data['wp_env'] === false || ! in_array( $this->data['wp_env'], array( 'production', 'staging', 'development' ) ) ) {
+		if ( false === $this->data['wp_env'] || ! in_array( $this->data['wp_env'], array( 'production', 'staging', 'development' ) ) ) {
 			$this->data['wp_env'] = 'production';
 		}
 
@@ -130,13 +130,13 @@ class Config extends \WPPRSC\BaseAbstract {
 		foreach ( $constants as $constant => $default ) {
 			if ( ! in_array( $constant, $this->data['protected'] ) ) {
 				$value = $this->get_constant_setting( $constant );
-				if ( $value !== false ) {
+				if ( null !== $value ) {
 					$value = $this->normalize_value( $value );
 					define( $constant, $value );
 				}
 			}
 
-			if ( ! defined( $constant ) && $default !== null ) {
+			if ( ! defined( $constant ) && null !== $default ) {
 				if ( is_string( $default ) ) {
 					$default = preg_replace_callback( '/\{\{([A-Z_]+)\}\}/', function( $matches ) {
 						if ( isset( $matches[1] ) && defined( $matches[1] ) ) {
@@ -256,7 +256,7 @@ class Config extends \WPPRSC\BaseAbstract {
 			case array_key_exists( $name, $this->data['composer'] ):
 				return $this->data['composer'][ $name ];
 			default:
-				return false;
+				return null;
 		}
 	}
 
