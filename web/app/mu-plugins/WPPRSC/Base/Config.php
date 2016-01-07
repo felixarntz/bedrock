@@ -148,6 +148,12 @@ class Config extends \WPPRSC\BaseAbstract {
 				define( $constant, $default );
 			}
 		}
+
+		if ( defined( 'WP_ALLOW_MULTISITE' ) && WP_ALLOW_MULTISITE || defined( 'MULTISITE' ) && MULTISITE ) {
+			define( 'SUBDOMAIN_INSTALL', true );
+			define( 'ALLOW_SUBDIRECTORY_INSTALL', false );
+			define( 'SUNRISE', true );
+		}
 	}
 
 	protected function apply_globals() {
@@ -175,6 +181,13 @@ class Config extends \WPPRSC\BaseAbstract {
 			'SCRIPT_DEBUG',
 			'SAVEQUERIES',
 			'ABSPATH',
+			'SUBDOMAIN_INSTALL',
+			'ALLOW_SUBDIRECTORY_INSTALL',
+			'SUNRISE',
+			'DOMAIN_CURRENT_SITE',
+			'PATH_CURRENT_SITE',
+			'SITE_ID_CURRENT_SITE',
+			'BLOG_ID_CURRENT_SITE',
 		);
 	}
 
@@ -237,9 +250,7 @@ class Config extends \WPPRSC\BaseAbstract {
 			// Multisite
 			'WP_ALLOW_MULTISITE'			=> null,
 			'MULTISITE'						=> null,
-			'ALLOW_SUBDIRECTORY_INSTALL'	=> null,
-			'SUBDOMAIN_INSTALL'				=> null,
-			'SUNRISE'						=> null,
+			'NOBLOGREDIRECT'				=> null,
 			// WordPress Bootstrap
 			'ABSPATH'						=> $this->data['webroot_dir'] . '/core/'
 		);
