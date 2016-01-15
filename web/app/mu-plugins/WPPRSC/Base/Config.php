@@ -34,15 +34,9 @@ class Config extends \WPPRSC\BaseAbstract {
 		$this->data['webroot_dir'] = dirname( $this->data['content_dir'] );
 		$this->data['root_dir'] = dirname( $this->data['webroot_dir'] );
 
-		$this->data['server_protocol'] = 'http';
-		if ( ( isset( $_SERVER['https'] ) && ! empty( $_SERVER['https'] ) && $_SERVER['https'] !== 'off' ) || $_SERVER['SERVER_PORT'] == '443' ) {
-			$this->data['server_protocol'] = 'https';
-		}
-		$this->data['server_name'] = $_SERVER['SERVER_NAME'];
-		$this->data['server_port'] = '';
-		if ( ! in_array( $_SERVER['SERVER_PORT'], array( '80', '443' ) ) ) {
-			$this->data['server_port'] = $_SERVER['SERVER_PORT'];
-		}
+		$this->data['server_protocol'] = self::get_current_protocol();
+		$this->data['server_name'] = self::get_current_domain();
+		$this->data['server_port'] = self::get_current_port();
 
 		$this->data['server_url'] = $this->data['server_protocol'] . '://' . $this->data['server_name'] . ( ! empty( $this->data['server_port'] ) ? ':' . $this->data['server_port'] : '' );
 
@@ -60,6 +54,8 @@ class Config extends \WPPRSC\BaseAbstract {
 		$this->define_constants();
 
 		$this->apply_globals();
+
+		$this->maybe_redirect_https();
 	}
 
 	public function get_info( $field = null ) {
@@ -134,25 +130,37 @@ class Config extends \WPPRSC\BaseAbstract {
 					$value = $this->normalize_value( $value );
 					define( $constant, $value );
 				}
+			} elseif ( defined( $constant ) ) {
+				die( sprintf( 'The constant %s must not be defined.', $constant ) );
 			}
 
 			if ( ! defined( $constant ) && null !== $default ) {
-				if ( is_string( $default ) ) {
-					$default = preg_replace_callback( '/\{\{([A-Z_]+)\}\}/', function( $matches ) {
-						if ( isset( $matches[1] ) && defined( $matches[1] ) ) {
-							return constant( $matches[1] );
-						}
-						return '';
-					}, $default );
-				}
 				define( $constant, $default );
 			}
 		}
 
+		define( 'WP_CONTENT_DIR', $this->data['content_dir'] );
+
 		if ( defined( 'WP_ALLOW_MULTISITE' ) && WP_ALLOW_MULTISITE || defined( 'MULTISITE' ) && MULTISITE ) {
 			define( 'SUBDOMAIN_INSTALL', true );
 			define( 'ALLOW_SUBDIRECTORY_INSTALL', false );
+			define( 'COOKIEPATH', '/' );
+			define( 'SITECOOKIEPATH', '/' );
+			define( 'ADMIN_COOKIE_PATH', '/wp-admin' );
+			define( 'COOKIE_DOMAIN', '' );
 			define( 'SUNRISE', true );
+			// WP_HOME, WP_SITEURL and WP_CONTENT_URL on multisite are handled by the Sunrise class
+		} else {
+			if ( ! defined( 'WP_HOME' ) ) {
+				define( 'WP_HOME', $this->data['server_url'] );
+			}
+			define( 'WP_SITEURL', WP_HOME . '/core' );
+			define( 'WP_CONTENT_URL', WP_HOME . '/' . basename( WP_CONTENT_DIR ) );
+		}
+
+		if ( defined( 'WP_HOME' ) && 0 === strpos( WP_HOME, 'https://' ) || self::is_ssl( $this->data['server_name'] ) ) {
+			define( 'FORCE_SSL_ADMIN', true );
+			define( 'FORCE_SSL_LOGIN', true );
 		}
 	}
 
@@ -160,6 +168,13 @@ class Config extends \WPPRSC\BaseAbstract {
 		global $table_prefix;
 
 		$table_prefix = DB_PREFIX;
+	}
+
+	protected function maybe_redirect_https() {
+		if ( self::is_ssl( $this->data['server_name'] ) && 'http' === $this->data['server_protocol'] ) {
+			header( 'Location: https://' . $this->data['server_name'] . Config::get_current_path(), true, 301 );
+			exit;
+		}
 	}
 
 	protected function get_required_constants() {
@@ -175,6 +190,8 @@ class Config extends \WPPRSC\BaseAbstract {
 			'WP_SITEURL',
 			'WP_CONTENT_DIR',
 			'WP_CONTENT_URL',
+			'FORCE_SSL_ADMIN',
+			'FORCE_SSL_LOGIN',
 			'WP_DEBUG',
 			'WP_DEBUG_LOG',
 			'WP_DEBUG_DISPLAY',
@@ -183,11 +200,15 @@ class Config extends \WPPRSC\BaseAbstract {
 			'ABSPATH',
 			'SUBDOMAIN_INSTALL',
 			'ALLOW_SUBDIRECTORY_INSTALL',
-			'SUNRISE',
 			'DOMAIN_CURRENT_SITE',
 			'PATH_CURRENT_SITE',
 			'SITE_ID_CURRENT_SITE',
 			'BLOG_ID_CURRENT_SITE',
+			'COOKIEPATH',
+			'SITECOOKIEPATH',
+			'ADMIN_COOKIE_PATH',
+			'COOKIE_DOMAIN',
+			'SUNRISE',
 		);
 	}
 
@@ -212,12 +233,14 @@ class Config extends \WPPRSC\BaseAbstract {
 			'NONCE_SALT'					=> '',
 			// Site Data
 			'WPLANG'						=> '',
-			'WP_HOME'						=> $this->data['server_url'],
-			'WP_SITEURL'					=> '{{WP_HOME}}/core',
-			'WP_CONTENT_DIR'				=> $this->data['content_dir'],
-			'WP_CONTENT_URL'				=> '{{WP_HOME}}/' . basename( $this->data['content_dir'] ),
-			'FORCE_SSL_ADMIN'				=> 'https' === $this->data['server_protocol'],
-			'FORCE_SSL_LOGIN'				=> 'https' === $this->data['server_protocol'],
+			'WP_HOME'						=> null,
+			'WP_SITEURL'					=> null,
+			'WP_CONTENT_DIR'				=> null,
+			'WP_CONTENT_URL'				=> null,
+			'WP_SSL_GLOBAL'					=> null,
+			'WP_SSL_DOMAINS'				=> null,
+			'FORCE_SSL_ADMIN'				=> null,
+			'FORCE_SSL_LOGIN'				=> null,
 			// Environment
 			'WP_ENV'						=> $this->data['wp_env'],
 			'WP_DEBUG'						=> 'production' !== $this->data['wp_env'],
@@ -251,6 +274,18 @@ class Config extends \WPPRSC\BaseAbstract {
 			'WP_ALLOW_MULTISITE'			=> null,
 			'MULTISITE'						=> null,
 			'NOBLOGREDIRECT'				=> null,
+			// Multisite Advanced
+			'SUBDOMAIN_INSTALL'				=> null,
+			'ALLOW_SUBDIRECTORY_INSTALL'	=> null,
+			'DOMAIN_CURRENT_SITE'			=> null,
+			'PATH_CURRENT_SITE'				=> null,
+			'SITE_ID_CURRENT_SITE'			=> null,
+			'BLOG_ID_CURRENT_SITE'			=> null,
+			'COOKIEPATH'					=> null,
+			'SITECOOKIEPATH'				=> null,
+			'ADMIN_COOKIE_PATH'				=> null,
+			'COOKIE_DOMAIN'					=> null,
+			'SUNRISE'						=> null,
 			// WordPress Bootstrap
 			'ABSPATH'						=> $this->data['webroot_dir'] . '/core/'
 		);
@@ -300,5 +335,65 @@ class Config extends \WPPRSC\BaseAbstract {
 				}
 				return $value;
 		}
+	}
+
+	public static function is_ssl( $domain, $strict = false ) {
+		if ( defined( 'WP_SSL_GLOBAL' ) && WP_SSL_GLOBAL ) {
+			return true;
+		}
+
+		if ( ! defined( 'WP_SSL_DOMAINS' ) || ! WP_SSL_DOMAINS ) {
+			return false;
+		}
+
+		$ssl_domains = explode( ',', WP_SSL_DOMAINS );
+
+		if ( in_array( $domain, $ssl_domains ) ) {
+			return true;
+		} elseif ( ! $strict && 0 !== strpos( $domain, 'www.' ) && in_array( 'www.' . $domain, $ssl_domains ) ) {
+			return true;
+		} elseif ( ! $strict && 0 === strpos( $domain, 'www.' ) && in_array( substr( $domain, 4 ), $ssl_domains ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public static function get_current_domain() {
+		$domain = strtolower( stripslashes( $_SERVER['HTTP_HOST'] ) );
+		if ( ':80' === substr( $domain, -3 ) ) {
+			$domain = substr( $domain, 0, -3 );
+			$_SERVER['HTTP_HOST'] = substr( $_SERVER['HTTP_HOST'], 0, -3 );
+		} elseif ( ':443' === substr( $domain, -4 ) ) {
+			$domain = substr( $domain, 0, -4 );
+			$_SERVER['HTTP_HOST'] = substr( $_SERVER['HTTP_HOST'], 0, -4 );
+		}
+
+		return $domain;
+	}
+
+	public static function get_current_path() {
+		return stripslashes( $_SERVER['REQUEST_URI'] );
+	}
+
+	public static function get_current_protocol() {
+		if ( function_exists( 'is_ssl' ) ) {
+			if ( is_ssl() ) {
+				return 'https';
+			}
+			return 'http';
+		}
+
+		if ( ( isset( $_SERVER['https'] ) && ! empty( $_SERVER['https'] ) && $_SERVER['https'] !== 'off' ) || $_SERVER['SERVER_PORT'] == '443' ) {
+			return 'https';
+		}
+		return 'http';
+	}
+
+	public static function get_current_port() {
+		if ( ! in_array( $_SERVER['SERVER_PORT'], array( '80', '443' ) ) ) {
+			return $_SERVER['SERVER_PORT'];
+		}
+		return '';
 	}
 }

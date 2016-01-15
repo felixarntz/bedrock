@@ -26,7 +26,7 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 			exit;
 		}
 
-		$domain = $this->get_current_domain();
+		$domain = Config::get_current_domain();
 
 		$domains = array( $domain );
 		if ( 0 === strpos( $domain, 'www.' ) ) {
@@ -87,10 +87,11 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		}
 
 		// if we reach this point, everything has been detected successfully
+		$this->define_additional_constants( $site->domain );
 		$this->expose_globals( $site, $network );
 	}
 
-	private function detect_site( $domains = array() ) {
+	protected function detect_site( $domains = array() ) {
 		global $wpdb;
 
 		$search_domains = "'" . implode( "','", $wpdb->_escape( $domains ) ) . "'";
@@ -103,7 +104,7 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		return false;
 	}
 
-	private function detect_network( $domains_or_site = array() ) {
+	protected function detect_network( $domains_or_site = array() ) {
 		global $wpdb;
 
 		if ( is_object( $domains_or_site ) && isset( $domains_or_site->site_id ) ) {
@@ -120,7 +121,7 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		return false;
 	}
 
-	private function fail_gracefully( $domain, $mode = 'site' ) {
+	protected function fail_gracefully( $domain, $mode = 'site' ) {
 		if ( 'network' === $mode ) {
 			do_action( 'ms_network_not_found', $domain, '/' );
 		} elseif ( defined( 'NOBLOGREDIRECT' ) && '%siteurl%' !== NOBLOGREDIRECT ) {
@@ -131,7 +132,27 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		ms_not_installed( $domain, '/' );
 	}
 
-	private function expose_globals( $site, $network ) {
+	protected function define_additional_constants( $domain ) {
+		$protocol = Config::is_ssl( $domain ) ? 'https' : 'http';
+
+		if ( ! defined( 'WP_SITEURL' ) ) {
+			define( 'WP_SITEURL', $protocol . '://' . $domain . '/core' );
+		}
+		if ( ! defined( 'WP_CONTENT_URL' ) ) {
+			define( 'WP_CONTENT_URL', $protocol . '://' . $domain . '/' . basename( WP_CONTENT_DIR ) );
+		}
+
+		add_filter( 'option_siteurl', array( $this, 'fix_siteurl' ) );
+	}
+
+	public function fix_siteurl( $siteurl ) {
+		if ( strlen( $siteurl ) - 5 !== strpos( $siteurl, '/core' ) ) {
+			$siteurl .= '/core';
+		}
+		return $siteurl;
+	}
+
+	protected function expose_globals( $site, $network ) {
 		global $current_blog, $current_site, $blog_id, $site_id, $public;
 
 		$current_blog = $site;
@@ -145,28 +166,11 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		wp_load_core_site_options( $site_id );
 	}
 
-	private function redirect( $domain ) {
-		$scheme = is_ssl() ? 'https' : 'http';
-		$path = $this->get_current_path();
+	protected function redirect( $domain ) {
+		$protocol = Config::is_ssl( $domain ) ? 'https' : 'http';
+		$path = Config::get_current_path();
 
-		header( 'Location: ' . $scheme . '://' . $domain . $path, true, 301 );
+		header( 'Location: ' . $protocol . '://' . $domain . $path, true, 301 );
 		exit;
-	}
-
-	private function get_current_domain() {
-		$domain = strtolower( stripslashes( $_SERVER['HTTP_HOST'] ) );
-		if ( ':80' === substr( $domain, -3 ) ) {
-			$domain = substr( $domain, 0, -3 );
-			$_SERVER['HTTP_HOST'] = substr( $_SERVER['HTTP_HOST'], 0, -3 );
-		} elseif ( ':443' === substr( $domain, -4 ) ) {
-			$domain = substr( $domain, 0, -4 );
-			$_SERVER['HTTP_HOST'] = substr( $_SERVER['HTTP_HOST'], 0, -4 );
-		}
-
-		return $domain;
-	}
-
-	private function get_current_path() {
-		return stripslashes( $_SERVER['REQUEST_URI'] );
 	}
 }
