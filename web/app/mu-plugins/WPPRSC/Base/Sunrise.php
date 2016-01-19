@@ -1,6 +1,6 @@
 <?php
 /**
- * Handles site and network detection.
+ * Handles site and network detection (called from /app/sunrise.php).
  *
  * This class is invoked in sunrise.php.
  * Note that the variables in this code use the modern Multisite terminology (networks of sites).
