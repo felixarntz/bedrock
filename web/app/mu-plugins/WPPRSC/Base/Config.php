@@ -47,7 +47,7 @@ class Config extends \WPPRSC\BaseAbstract {
 		$this->load_composer();
 
 		$this->data['wp_env'] = $this->get_constant_setting( 'WP_ENV' );
-		if ( false === $this->data['wp_env'] || ! in_array( $this->data['wp_env'], array( 'production', 'staging', 'development' ) ) ) {
+		if ( false === $this->data['wp_env'] || ! in_array( $this->data['wp_env'], array( 'production', 'staging', 'development' ), true ) ) {
 			$this->data['wp_env'] = 'production';
 		}
 
@@ -105,9 +105,10 @@ class Config extends \WPPRSC\BaseAbstract {
 		$this->data['composer'] = array();
 		if ( isset( $composer['extra'] ) ) {
 			if ( isset( $composer['extra']['constants'] ) ) {
-				foreach ( $composer['extra']['constants'] as $constant => $value ) {
+				$constants = $this->normalize_constants( $composer['extra']['constants'] );
+				foreach ( $constants as $constant => $value ) {
 					if ( ! is_array( $value ) ) {
-						$this->data['composer'][ $this->normalize_constant( $constant ) ] = $value;
+						$this->data['composer'][ $constant ] = $value;
 					}
 				}
 			}
@@ -124,7 +125,7 @@ class Config extends \WPPRSC\BaseAbstract {
 		$constants = $this->get_default_constants();
 
 		foreach ( $constants as $constant => $default ) {
-			if ( ! in_array( $constant, $this->data['protected'] ) ) {
+			if ( ! in_array( $constant, $this->data['protected'], true ) ) {
 				$value = $this->get_constant_setting( $constant );
 				if ( null !== $value ) {
 					$value = $this->normalize_value( $value );
@@ -136,6 +137,20 @@ class Config extends \WPPRSC\BaseAbstract {
 
 			if ( ! defined( $constant ) && null !== $default ) {
 				define( $constant, $default );
+			}
+		}
+
+		foreach ( $_ENV as $constant => $value ) {
+			if ( false === strpos( $constant, '-' ) && strtoupper( $constant ) === $constant ) {
+				if ( ! in_array( $constant, $this->data['protected'], true ) && ! defined( $constant ) ) {
+					define( $constant, $this->normalize_value( $value ) );
+				}
+			}
+		}
+
+		foreach ( $this->data['composer'] as $constant => $value ) {
+			if ( ! in_array( $constant, $this->data['protected'], true ) && ! defined( $constant ) ) {
+				define( $constant, $this->normalize_value( $value ) );
 			}
 		}
 
@@ -306,6 +321,10 @@ class Config extends \WPPRSC\BaseAbstract {
 		}
 	}
 
+	protected function normalize_constants( $constants ) {
+		return array_map( array( $this, 'normalize_constant' ), $this->flatten( $constants ) );
+	}
+
 	protected function normalize_constant( $constant ) {
 		return strtoupper( str_replace( array( '-', ' ' ), '_', $constant ) );
 	}
@@ -337,6 +356,24 @@ class Config extends \WPPRSC\BaseAbstract {
 		}
 	}
 
+	protected function flatten( $arr, $prefix = '', $separator = '_' ) {
+		$result = array();
+
+		if ( is_object( $arr ) ) {
+			$arr = get_object_vars( $arr );
+		}
+
+		foreach ( $arr as $key => $value ) {
+			if ( is_array( $value ) || is_object( $value ) ) {
+				$result = $result + $this->flatten( $value, $prefix . $key . $separator, $separator );
+			} else {
+				$result[ $prefix . $key ] = $value;
+			}
+		}
+
+		return $result;
+	}
+
 	public static function is_ssl( $domain, $strict = false ) {
 		if ( defined( 'WP_SSL_GLOBAL' ) && WP_SSL_GLOBAL ) {
 			return true;
@@ -348,11 +385,11 @@ class Config extends \WPPRSC\BaseAbstract {
 
 		$ssl_domains = explode( ',', WP_SSL_DOMAINS );
 
-		if ( in_array( $domain, $ssl_domains ) ) {
+		if ( in_array( $domain, $ssl_domains, true ) ) {
 			return true;
-		} elseif ( ! $strict && 0 !== strpos( $domain, 'www.' ) && in_array( 'www.' . $domain, $ssl_domains ) ) {
+		} elseif ( ! $strict && 0 !== strpos( $domain, 'www.' ) && in_array( 'www.' . $domain, $ssl_domains, true ) ) {
 			return true;
-		} elseif ( ! $strict && 0 === strpos( $domain, 'www.' ) && in_array( substr( $domain, 4 ), $ssl_domains ) ) {
+		} elseif ( ! $strict && 0 === strpos( $domain, 'www.' ) && in_array( substr( $domain, 4 ), $ssl_domains, true ) ) {
 			return true;
 		}
 
@@ -391,7 +428,7 @@ class Config extends \WPPRSC\BaseAbstract {
 	}
 
 	public static function get_current_port() {
-		if ( ! in_array( $_SERVER['SERVER_PORT'], array( '80', '443' ) ) ) {
+		if ( ! in_array( absint( $_SERVER['SERVER_PORT'] ), array( 80, 443 ), true ) ) {
 			return $_SERVER['SERVER_PORT'];
 		}
 		return '';
