@@ -30,6 +30,9 @@ function wpprsc_modules_init() {
 		'frontend_cleanup'	=> 'FrontendCleanup',
 		'github_updater'	=> 'GithubUpdater',
 		'git_manager'		=> 'GitManager',
+		'legal_council'		=> 'LegalCouncil',
+		'nice_emails'		=> 'NiceEmails',
+		'nice_login'		=> 'NiceLogin',
 		'security'			=> 'Security',
 	);
 	foreach ( $wpprsc_modules as $setting => $class ) {

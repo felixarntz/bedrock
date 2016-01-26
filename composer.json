@@ -96,6 +96,16 @@
         "clean_img_dimensions": true,
         "improve_html5_support": true
       },
+      "module_legal_council": {
+        "cookie_notice": true,
+        "legal_generator": true,
+      },
+      "module_nice_emails": {
+        "enabled": true,
+      },
+      "module_nice_login": {
+        "enabled": true,
+      },
       "module_security": {
         "disable_xmlrpc": true
       }
