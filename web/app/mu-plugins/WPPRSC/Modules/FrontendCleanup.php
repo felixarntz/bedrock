@@ -8,42 +8,44 @@ namespace WPPRSC\Modules;
 class FrontendCleanup extends \WPPRSC\ModuleAbstract {
 	protected function __construct( $args = array() ) {
 		parent::__construct( $args );
+
+		$this->module_name = 'frontend_cleanup';
 	}
 
 	public function run() {
-		if ( $this->args['clean_feed_links'] ) {
+		if ( $this->get_setting( 'clean_feed_links' ) ) {
 			remove_action( 'wp_head', 'feed_links', 2 );
 		}
 
-		if ( $this->args['clean_feed_links_extra'] ) {
+		if ( $this->get_setting( 'clean_feed_links_extra' ) ) {
 			remove_action( 'wp_head', 'feed_links_extra', 3 );
 		}
 
-		if ( $this->args['clean_rsd_link'] ) {
+		if ( $this->get_setting( 'clean_rsd_link' ) ) {
 			remove_action( 'wp_head', 'rsd_link' );
 		}
 
-		if ( $this->args['clean_wlwmanifest_link'] ) {
+		if ( $this->get_setting( 'clean_wlwmanifest_link' ) ) {
 			remove_action( 'wp_head', 'wlwmanifest_link' );
 		}
 
-		if ( $this->args['clean_wp_generator'] ) {
+		if ( $this->get_setting( 'clean_wp_generator' ) ) {
 			remove_action( 'wp_head', 'wp_generator' );
 			foreach ( array( 'rss2_head', 'commentsrss2_head', 'rss_head', 'rdf_header', 'atom_head', 'comments_atom_head', 'opml_head', 'app_head' ) as $action ) {
 				remove_action( $action, 'the_generator' );
 			}
 		}
 
-		if ( $this->args['clean_wp_api'] ) {
+		if ( $this->get_setting( 'clean_wp_api' ) ) {
 			remove_action( 'wp_head', 'rest_output_link_wp_head', 10 );
 		}
 
-		if ( $this->args['clean_wp_embed'] ) {
+		if ( $this->get_setting( 'clean_wp_embed' ) ) {
 			remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
 			remove_action( 'wp_head', 'wp_oembed_add_host_js' );
 		}
 
-		if ( $this->args['clean_emoji'] ) {
+		if ( $this->get_setting( 'clean_emoji' ) ) {
 			remove_action( 'admin_print_styles', 'print_emoji_styles' );
 			remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 			remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
@@ -54,21 +56,21 @@ class FrontendCleanup extends \WPPRSC\ModuleAbstract {
 			add_filter( 'tiny_mce_plugins', array( $this, 'disable_emojicons_tinymce' ) );
 		}
 
-		if ( $this->args['clean_recent_comments_style'] ) {
+		if ( $this->get_setting( 'clean_recent_comments_style' ) ) {
 			add_action( 'widgets_init', array( $this, 'remove_recent_comments_style' ) );
 		}
 
-		if ( $this->args['clean_asset_versions'] ) {
+		if ( $this->get_setting( 'clean_asset_versions' ) ) {
 			add_filter( 'style_loader_src', array( $this, 'strip_version_arg' ), 10, 2 );
 			add_filter( 'script_loader_src', array( $this, 'strip_version_arg' ), 10, 2 );
 		}
 
-		if ( $this->args['clean_img_dimensions'] ) {
+		if ( $this->get_setting( 'clean_img_dimensions' ) ) {
 			add_filter( 'post_thumbnail_html', array( $this, 'strip_hwstring' ) );
 			add_filter( 'image_send_to_editor', array( $this, 'strip_hwstring' ) );
 		}
 
-		if ( $this->args['improve_html5_support'] ) {
+		if ( $this->get_setting( 'improve_html5_support' ) ) {
 			// hook this in later so that we can check theme support
 			add_action( 'init', array( $this, 'improve_html5_support' ) );
 		}
@@ -127,19 +129,19 @@ class FrontendCleanup extends \WPPRSC\ModuleAbstract {
 
 	public function head_links() {
 		ob_start();
-		if ( ! $this->args['clean_feed_links'] ) {
+		if ( ! $this->get_setting( 'clean_feed_links' ) ) {
 			feed_links();
 		}
-		if ( ! $this->args['clean_feed_links_extra'] ) {
+		if ( ! $this->get_setting( 'clean_feed_links_extra' ) ) {
 			feed_links_extra();
 		}
-		if ( ! $this->args['clean_rsd_link'] ) {
+		if ( ! $this->get_setting( 'clean_rsd_link' ) ) {
 			rsd_link();
 		}
-		if ( ! $this->args['clean_wlwmanifest_link'] ) {
+		if ( ! $this->get_setting( 'clean_wlwmanifest_link' ) ) {
 			wlwmanifest_link();
 		}
-		if ( ! $this->args['clean_wp_generator'] ) {
+		if ( ! $this->get_setting( 'clean_wp_generator' ) ) {
 			wp_generator();
 		}
 		echo $this->remove_self_closing_tag( ob_get_clean() );

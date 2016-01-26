@@ -8,10 +8,15 @@ namespace WPPRSC\Modules;
 class AutoUpdater extends \WPPRSC\ModuleAbstract {
 	protected function __construct( $args = array() ) {
 		parent::__construct( $args );
+
+		$this->module_name = 'auto_updater';
+		$this->network_only = true;
 	}
 
 	public function run() {
-		foreach ( $this->args as $type => $enabled ) {
+		$types = array( 'core_major', 'core_minor', 'core_dev', 'plugin', 'theme', 'translation' );
+		foreach ( $types as $type ) {
+			$enabled = $this->get_setting( $type );
 			$filter_name = 'auto_update_' . $type;
 			if ( strpos( $type, 'core_' ) === 0 ) {
 				$filter_name = 'allow_' . str_replace( 'core_', '', $type ) . '_auto_core_updates';

@@ -8,6 +8,8 @@ namespace WPPRSC\Modules;
 class ClientRole extends \WPPRSC\ModuleAbstract {
 	protected function __construct( $args = array() ) {
 		parent::__construct( $args );
+
+		$this->module_name = 'client_role';
 	}
 
 	public function run() {
@@ -27,7 +29,7 @@ class ClientRole extends \WPPRSC\ModuleAbstract {
 		$editor = get_role( 'editor' );
 
 		$slug = 'client';
-		$display_name = $this->args['display_name'];
+		$display_name = $this->get_setting( 'display_name' );
 		$new_capabilities = array(
 			'switch_themes'			=> true,
 			'edit_theme_options'	=> true,

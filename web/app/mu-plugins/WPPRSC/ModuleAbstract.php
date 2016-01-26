@@ -3,6 +3,8 @@
 namespace WPPRSC;
 
 abstract class ModuleAbstract extends \WPPRSC\BaseAbstract {
+	protected $module_name = '';
+	protected $network_only = false;
 	protected $validated = false;
 	protected $args = array();
 
@@ -20,6 +22,44 @@ abstract class ModuleAbstract extends \WPPRSC\BaseAbstract {
 
 	protected function __construct( $args = array() ) {
 		$this->set_args( $args );
+	}
+
+	public function get_setting( $name ) {
+		if ( ! empty( $this->module_name ) ) {
+			if ( ! $this->network_only ) {
+				$constant = 'WP_' . strtoupper( $this->module_name ) . '_OPTION_' . get_current_blog_id() . '_' . strtoupper( $name );
+				if ( defined( $constant ) ) {
+					return constant( $constant );
+				}
+			}
+
+			$constant = 'WP_' . strtoupper( $this->module_name ) . '_OPTION_' . strtoupper( $name );
+			if ( defined( $constant ) ) {
+				return constant( $constant );
+			}
+
+			if ( $this->network_only && is_multisite() ) {
+				$options = get_site_option( 'wpprsc_' . $this->module_name, array() );
+				if ( isset( $options[ $name ] ) ) {
+					return $options[ $name ];
+				}
+			} else {
+				$options = get_option( 'wpprsc_' . $this->module_name, array() );
+				if ( isset( $options[ $name ] ) ) {
+					return $options[ $name ];
+				}
+			}
+		}
+
+		if ( isset( $this->args[ $name ] ) ) {
+			return $this->args[ $name ];
+		}
+
+		return null;
+	}
+
+	public function is_network_only() {
+		return $this->network_only;
 	}
 
 	public function set_args( $args = array() ) {

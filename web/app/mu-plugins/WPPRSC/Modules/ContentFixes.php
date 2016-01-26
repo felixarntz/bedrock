@@ -8,10 +8,12 @@ namespace WPPRSC\Modules;
 class ContentFixes extends \WPPRSC\ModuleAbstract {
 	protected function __construct( $args = array() ) {
 		parent::__construct( $args );
+
+		$this->module_name = 'content_fixes';
 	}
 
 	public function run() {
-		if ( $this->args['disable_posts'] ) {
+		if ( $this->get_setting( 'disable_posts' ) ) {
 			remove_action( 'wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0 );
 
 			if ( ! is_admin() || defined( 'DOING_AJAX' ) && DOING_AJAX ) {
@@ -27,7 +29,7 @@ class ContentFixes extends \WPPRSC\ModuleAbstract {
 			add_action( 'admin_head', array( $this, 'hide_posts_setting' ) );
 		}
 
-		if ( $this->args['disable_comments'] ) {
+		if ( $this->get_setting( 'disable_comments' ) ) {
 			add_filter( 'pre_option_default_comment_status', array( $this, '__return_closed' ) );
 			add_filter( 'comments_open', '__return_false' );
 			add_filter( 'pings_open', '__return_false' );
@@ -39,7 +41,7 @@ class ContentFixes extends \WPPRSC\ModuleAbstract {
 			add_action( 'admin_init', array( $this, 'remove_comments_dashboard_widget' ) );
 			add_action( 'admin_menu', array( $this, 'remove_comments_menu' ), 100 );
 			add_action( 'init', array( $this, 'remove_comments_admin_bar_menu' ), 100 );
-		} elseif ( $this->args['disable_pingbacks'] ) {
+		} elseif ( $this->get_setting( 'disable_pingbacks' ) ) {
 			add_filter( 'pre_option_default_ping_status', array( $this, '__return_closed' ) );
 			add_filter( 'pings_open', '__return_false' );
 
