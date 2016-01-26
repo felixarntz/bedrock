@@ -102,6 +102,8 @@
       },
       "module_nice_emails": {
         "enabled": true,
+        "force_from": true,
+        "default_from_prefix": "info"
       },
       "module_nice_login": {
         "enabled": true,
