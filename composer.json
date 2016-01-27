@@ -46,21 +46,27 @@
     "php": ">=5.5",
     "composer/installers": "~1.0",
     "vlucas/phpdotenv": "2.0.1",
-    "johnpbloch/wordpress": "4.4",
+    "johnpbloch/wordpress": "4.4.1",
     "afragen/github-updater": "5.0.1",
     "wpackagist-plugin/wp-multi-network": "1.7.0",
     "wpackagist-plugin/wordpress-seo": "3.0.7",
-    "felixarntz/options-definitely": "0.5.1",
-    "felixarntz/post-types-definitely": "0.5.1"
+    "wpackagist-plugin/options-definitely": "0.6.0",
+    "wpackagist-plugin/post-types-definitely": "0.6.0",
+    "wpackagist-theme/twentysixteen": "1.1"
   },
   "extra": {
     "installer-paths": {
-      "web/app/mu-plugins/{$name}/": ["type:wordpress-muplugin", "felixarntz/options-definitely", "felixarntz/post-types-definitely"],
+      "web/app/mu-plugins/{$name}/": ["type:wordpress-muplugin"],
       "web/app/plugins/{$name}/": ["type:wordpress-plugin"],
       "web/app/themes/{$name}/": ["type:wordpress-theme"]
     },
     "wordpress-install-dir": "web/core",
-    "constants": {},
+    "constants": {
+      "wp": {
+        "env": "production",
+        "default_theme": "twentysixteen"
+      }
+    },
     "settings": {
       "module_api_manager": {
         "enabled": true,
@@ -98,7 +104,7 @@
       },
       "module_legal_council": {
         "cookie_notice": true,
-        "legal_generator": true,
+        "legal_generator": true
       },
       "module_nice_emails": {
         "enabled": true,
@@ -106,7 +112,7 @@
         "default_from_prefix": "info"
       },
       "module_nice_login": {
-        "enabled": true,
+        "enabled": true
       },
       "module_security": {
         "disable_xmlrpc": true

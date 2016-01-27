@@ -87,7 +87,7 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		}
 
 		// if we reach this point, everything has been detected successfully
-		$this->define_additional_constants( $site->domain );
+		$this->define_additional_constants( $site, $network );
 		$this->expose_globals( $site, $network );
 	}
 
@@ -96,7 +96,7 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 
 		$search_domains = "'" . implode( "','", $wpdb->_escape( $domains ) ) . "'";
 
-		$site = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE domain IN ($domains) AND path = '/' ORDER BY CHAR_LENGTH(domain) DESC, CHAR_LENGTH(path) DESC LIMIT 1;" );
+		$site = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE domain IN ($search_domains) AND path = '/' ORDER BY CHAR_LENGTH(domain) DESC, CHAR_LENGTH(path) DESC LIMIT 1;" );
 		if ( ! empty( $site ) && ! is_wp_error( $site ) ) {
 			return $site;
 		}
@@ -108,14 +108,14 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		global $wpdb;
 
 		if ( is_object( $domains_or_site ) && isset( $domains_or_site->site_id ) ) {
-			return WP_Network::get_instance( $domains_or_site->site_id );
+			return \WP_Network::get_instance( $domains_or_site->site_id );
 		}
 
 		$search_domains = "'" . implode( "','", $wpdb->_escape( $domains_or_site ) ) . "'";
 
-		$network = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain IN ($domains) AND path = '/' ORDER BY CHAR_LENGTH(domain) DESC, CHAR_LENGTH(path) DESC LIMIT 1;" );
+		$network = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain IN ($search_domains) AND path = '/' ORDER BY CHAR_LENGTH(domain) DESC, CHAR_LENGTH(path) DESC LIMIT 1;" );
 		if ( ! empty( $network ) && ! is_wp_error( $network ) ) {
-			return new WP_Network( $network );
+			return new \WP_Network( $network );
 		}
 
 		return false;
@@ -132,17 +132,31 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		ms_not_installed( $domain, '/' );
 	}
 
-	protected function define_additional_constants( $domain ) {
-		$protocol = Config::is_ssl( $domain ) ? 'https' : 'http';
+	protected function define_additional_constants( $site, $network ) {
+		$protocol = Config::is_ssl( $site->domain ) ? 'https' : 'http';
 
-		if ( ! defined( 'WP_SITEURL' ) ) {
-			define( 'WP_SITEURL', $protocol . '://' . $domain . '/core' );
-		}
 		if ( ! defined( 'WP_CONTENT_URL' ) ) {
-			define( 'WP_CONTENT_URL', $protocol . '://' . $domain . '/' . basename( WP_CONTENT_DIR ) );
+			define( 'WP_CONTENT_URL', $protocol . '://' . $site->domain . '/' . basename( WP_CONTENT_DIR ) );
 		}
 
-		add_filter( 'option_siteurl', array( $this, 'fix_siteurl' ) );
+		if ( ! defined( 'COOKIEPATH' ) ) {
+			define( 'COOKIEPATH', '/' );
+		}
+		if ( ! defined( 'SITECOOKIEPATH' ) ) {
+			define( 'SITECOOKIEPATH', '/core/' );
+		}
+		if ( ! defined( 'ADMIN_COOKIE_PATH' ) ) {
+			define( 'ADMIN_COOKIE_PATH', '/core/wp-admin' );
+		}
+		if ( ! defined( 'COOKIE_DOMAIN' ) ) {
+			if ( strlen( $site->domain ) - strlen( $network->domain ) === strpos( $site->domain, $network->domain ) ) {
+				// site is a subdomain of the network domain
+				define( 'COOKIE_DOMAIN', '.' . $network->domain );
+			} else {
+				// site is not a subdomain or a subdomain where its second level domain is not the network domain
+				define( 'COOKIE_DOMAIN', '.' . $site->domain );
+			}
+		}
 	}
 
 	public function fix_siteurl( $siteurl ) {

@@ -79,8 +79,12 @@ class Config extends \WPPRSC\BaseAbstract {
 	protected function load_dotenv() {
 		$dotenv = new \Dotenv\Dotenv( $this->data['root_dir'] );
 		if ( file_exists( $this->data['root_dir'] . '/.env' ) ) {
-			$dotenv->load();
-			$dotenv->required( $this->data['required'] );
+			try {
+				$dotenv->load();
+				$dotenv->required( $this->data['required'] );
+			} catch( \Exception $e ) {
+				$this->bail( $e->getMessage() );
+			}
 		}
 	}
 
@@ -89,8 +93,24 @@ class Config extends \WPPRSC\BaseAbstract {
 		try {
 			$_composer = file_get_contents( $this->data['root_dir'] . '/composer.json' );
 			$composer = json_decode( $_composer, true );
+			switch ( json_last_error() ) {
+				case JSON_ERROR_DEPTH:
+					$message = 'Maximum stack exceeded.';
+					break;
+				case JSON_ERROR_CTRL_CHAR:
+					$message = 'Unexpected control character found.';
+					break;
+				case JSON_ERROR_SYNTAX:
+					$message = 'Syntax error in file.';
+					break;
+				default:
+					$message = '';
+			}
+			if ( ! empty( $message ) ) {
+				$this->bail( 'JSON Parse Error - ' . $message );
+			}
 		} catch ( \Exception $e ) {
-
+			$this->bail( $e->getMessage() );
 		}
 
 		$info_fields = array(
@@ -132,7 +152,7 @@ class Config extends \WPPRSC\BaseAbstract {
 					define( $constant, $value );
 				}
 			} elseif ( defined( $constant ) ) {
-				die( sprintf( 'The constant %s must not be defined.', $constant ) );
+				$this->bail( sprintf( 'The constant %s must not be defined.', $constant ) );
 			}
 
 			if ( ! defined( $constant ) && null !== $default ) {
@@ -156,15 +176,11 @@ class Config extends \WPPRSC\BaseAbstract {
 
 		define( 'WP_CONTENT_DIR', $this->data['content_dir'] );
 
-		if ( defined( 'WP_ALLOW_MULTISITE' ) && WP_ALLOW_MULTISITE || defined( 'MULTISITE' ) && MULTISITE ) {
+		if ( defined( 'MULTISITE' ) && MULTISITE ) {
 			define( 'SUBDOMAIN_INSTALL', true );
 			define( 'ALLOW_SUBDIRECTORY_INSTALL', false );
-			define( 'COOKIEPATH', '/' );
-			define( 'SITECOOKIEPATH', '/' );
-			define( 'ADMIN_COOKIE_PATH', '/wp-admin' );
-			define( 'COOKIE_DOMAIN', '' );
 			define( 'SUNRISE', true );
-			// WP_HOME, WP_SITEURL and WP_CONTENT_URL on multisite are handled by the Sunrise class
+			// further constants are defined in the Sunrise class
 		} else {
 			if ( ! defined( 'WP_HOME' ) ) {
 				define( 'WP_HOME', $this->data['server_url'] );
@@ -212,7 +228,6 @@ class Config extends \WPPRSC\BaseAbstract {
 			'WP_DEBUG_DISPLAY',
 			'SCRIPT_DEBUG',
 			'SAVEQUERIES',
-			'ABSPATH',
 			'SUBDOMAIN_INSTALL',
 			'ALLOW_SUBDIRECTORY_INSTALL',
 			'DOMAIN_CURRENT_SITE',
@@ -322,7 +337,12 @@ class Config extends \WPPRSC\BaseAbstract {
 	}
 
 	protected function normalize_constants( $constants ) {
-		return array_map( array( $this, 'normalize_constant' ), $this->flatten( $constants ) );
+		$constants = $this->flatten( $constants );
+
+		$keys = array_map( array( $this, 'normalize_constant' ), array_keys( $constants ) );
+		$values = array_values( $constants );
+
+		return array_combine( $keys, $values );
 	}
 
 	protected function normalize_constant( $constant ) {
@@ -372,6 +392,28 @@ class Config extends \WPPRSC\BaseAbstract {
 		}
 
 		return $result;
+	}
+
+	protected function bail( $message = '', $title = '' ) {
+		if ( ! defined( 'ABSPATH' ) ) {
+			define( 'ABSPATH', $this->data['webroot_dir'] . '/core/' );
+		}
+
+		if ( ! defined( 'WPINC' ) ) {
+			define( 'WPINC', 'wp-includes' );
+		}
+
+		require_once ABSPATH . WPINC . '/load.php';
+		require_once ABSPATH . WPINC . '/default-constants.php';
+		require_once ABSPATH . WPINC . '/compat.php';
+		require_once ABSPATH . WPINC . '/functions.php';
+		require_once ABSPATH . WPINC . '/plugin.php';
+
+		if ( ! function_exists( '__' ) ) {
+			wp_load_translations_early();
+		}
+
+		wp_die( '<strong>Initialization failed:</strong> ' . $message, $title );
 	}
 
 	public static function is_ssl( $domain, $strict = false ) {
@@ -428,7 +470,7 @@ class Config extends \WPPRSC\BaseAbstract {
 	}
 
 	public static function get_current_port() {
-		if ( ! in_array( absint( $_SERVER['SERVER_PORT'] ), array( 80, 443 ), true ) ) {
+		if ( ! in_array( intval( $_SERVER['SERVER_PORT'] ), array( 80, 443 ), true ) ) {
 			return $_SERVER['SERVER_PORT'];
 		}
 		return '';

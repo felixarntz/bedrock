@@ -24,7 +24,7 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 	}
 
 	public function content( $args = array() ) {
-		if ( isset( $args['message'] ) && ( false !== strpos( $args['message'], '</body>' ) && ( false !== strpos( $args['message'], '</p>' ) || false !== strpos( $args['message'], '</table>' ) ) ) {
+		if ( isset( $args['message'] ) && ( false !== strpos( $args['message'], '</body>' ) || false !== strpos( $args['message'], '</p>' ) || false !== strpos( $args['message'], '</table>' ) ) ) {
 			$this->current_adjustment_mode = 'normal';
 
 			$template = $this->get_template();
@@ -127,7 +127,7 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 			$locations[] = WP_CONTENT_DIR . '/' . ltrim( WP_DEFAULT_EMAIL_TEMPLATE, '/' );
 		}
 
-		$locations[] = wpprsc_get_path( 'templates/email.php' );
+		$locations[] = dirname( dirname( __FILE__ ) ) . '/templates/email.php';
 
 		foreach ( $locations as $location ) {
 			if ( file_exists( $location ) ) {

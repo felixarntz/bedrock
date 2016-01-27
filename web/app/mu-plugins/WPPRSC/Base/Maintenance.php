@@ -11,9 +11,15 @@ class Maintenance extends \WPPRSC\BaseAbstract {
 	protected function __construct() {
 	}
 
-	public function run( $type ) {
-		$this->type = $type;
+	public function set_type( $type ) {
+		if ( ! defined( 'DOING_MAINTENANCE' ) ) {
+			$this->type = $type;
+		}
 
+		return $this; // allows chaining
+	}
+
+	public function run() {
 		if ( defined( 'DOING_MAINTENANCE' ) ) {
 			return;
 		}
@@ -50,15 +56,23 @@ class Maintenance extends \WPPRSC\BaseAbstract {
 	}
 
 	protected function setup_data( $template ) {
+		global $locale, $wp_local_package;
+
 		$data = array();
 
 		$language_attributes = array();
 		if ( function_exists( 'is_rtl' ) && is_rtl() ) {
 			$language_attributes[] = 'dir="rtl"';
 		}
-		if ( function_exists( 'get_locale' ) ) {
-			$language_attributes[] = 'lang="' . str_replace( '_', '-', get_locale() ) . '"';
+		$the_locale = 'en_US';
+		if ( isset( $locale ) ) {
+			$the_locale = $locale;
+		} elseif ( defined( 'WPLANG' ) ) {
+			$the_locale = WPLANG;
+		} elseif ( isset( $wp_local_package ) ) {
+			$the_locale = $wp_local_package;
 		}
+		$language_attributes[] = 'lang="' . str_replace( '_', '-', $the_locale ) . '"';
 
 		if ( ! defined( 'WP_CONTENT_URL' ) ) {
 			$server_url = Config::get_current_protocol() . '://' . Config::get_current_domain();
@@ -100,7 +114,7 @@ class Maintenance extends \WPPRSC\BaseAbstract {
 			$locations[] = WP_CONTENT_DIR . '/' . ltrim( WP_DEFAULT_MAINTENANCE_TEMPLATE, '/' );
 		}
 
-		$locations[] = wpprsc_get_path( 'templates/maintenance.php' );
+		$locations[] = dirname( dirname( __FILE__ ) ) . '/templates/maintenance.php';
 
 		foreach ( $locations as $location ) {
 			if ( file_exists( $location ) ) {
