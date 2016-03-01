@@ -34,7 +34,7 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "http://wpackagist.org"
+      "url": "https://wpackagist.org"
     }
   ],
   "autoload": {
@@ -46,7 +46,7 @@
     "php": ">=5.5",
     "composer/installers": "~1.0",
     "vlucas/phpdotenv": "2.0.1",
-    "johnpbloch/wordpress": "4.4.1",
+    "johnpbloch/wordpress": "4.4.2",
     "afragen/github-updater": "5.0.1",
     "wpackagist-plugin/wp-multi-network": "1.7.0",
     "wpackagist-plugin/wordpress-seo": "3.0.7",
