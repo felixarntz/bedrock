@@ -55,6 +55,9 @@
     "wpackagist-plugin/post-types-definitely": "0.6.0",
     "wpackagist-theme/twentysixteen": "1.1"
   },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^2.5.1"
+  },
   "extra": {
     "installer-paths": {
       "web/app/mu-plugins/{$name}/": ["type:wordpress-muplugin"],
@@ -119,5 +122,10 @@
         "disable_xmlrpc": true
       }
     }
+  },
+  "scripts": {
+    "test": [
+      "vendor/bin/phpcs --ignore=web/wp/,vendor/ -n -s ."
+    ]
   }
 }
