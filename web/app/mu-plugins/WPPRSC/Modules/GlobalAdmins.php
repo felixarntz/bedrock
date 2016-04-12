@@ -35,12 +35,12 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 		switch ( $cap ) {
 			case 'manage_cache':
 			case 'manage_global_users':
-				if ( ! mnga_is_global_admin( $user_id ) ) {
+				if ( ! $this->is_global_admin( $user_id ) ) {
 					$caps[] = 'do_not_allow';
 				}
 				break;
 			case 'edit_user':
-				if ( ! mnga_is_global_admin( $user_id ) && isset( $args[0] ) && mnga_is_global_admin( $args[0] ) ) {
+				if ( ! $this->is_global_admin( $user_id ) && isset( $args[0] ) && $this->is_global_admin( $args[0] ) ) {
 					$caps[] = 'do_not_allow';
 				}
 				break;
@@ -52,7 +52,7 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 	public function map_meta_cap_non_multisite( $caps, $cap, $user_id, $args ) {
 		switch ( $cap ) {
 			case 'manage_cache':
-				if ( mnga_is_global_admin( $user_id ) ) {
+				if ( $this->is_global_admin( $user_id ) ) {
 					$caps = array( 'manage_options' );
 				}
 				break;
