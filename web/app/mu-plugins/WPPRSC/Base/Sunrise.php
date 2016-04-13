@@ -159,13 +159,6 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		}
 	}
 
-	public function fix_siteurl( $siteurl ) {
-		if ( strlen( $siteurl ) - 5 !== strpos( $siteurl, '/core' ) ) {
-			$siteurl .= '/core';
-		}
-		return $siteurl;
-	}
-
 	protected function expose_globals( $site, $network ) {
 		global $current_blog, $current_site, $blog_id, $site_id, $public;
 
