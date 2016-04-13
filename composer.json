@@ -46,7 +46,7 @@
     "php": ">=5.5",
     "composer/installers": "~1.0",
     "vlucas/phpdotenv": "2.0.1",
-    "johnpbloch/wordpress": "4.4.2",
+    "johnpbloch/wordpress": "4.5",
     "roots/wp-password-bcrypt": "1.0.0",
     "afragen/github-updater": "5.0.1",
     "wpackagist-plugin/wp-multi-network": "1.7.0",
