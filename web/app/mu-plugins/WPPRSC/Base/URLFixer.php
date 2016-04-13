@@ -37,6 +37,10 @@ class URLFixer extends \WPPRSC\BaseAbstract {
 		$path = ltrim( $path, '/' );
 		$url = substr( $url, 0, strlen( $url ) - strlen( $path ) );
 
-		return $url . 'core/' . $path;
+		if ( 'core/' !== substr( $url, -5 ) ) {
+			$url .= 'core/';
+		}
+
+		return $url . $path;
 	}
 }
