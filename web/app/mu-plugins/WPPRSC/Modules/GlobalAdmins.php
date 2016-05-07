@@ -17,6 +17,7 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 		if ( is_multisite() ) {
 			$this->set_super_admins();
 			add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 10, 4 );
+			add_filter( 'networks_user_is_network_admin', array( $this, 'user_has_networks' ), 10, 2 );
 			add_action( 'pre_user_query', array( $this, 'pre_user_query' ), 10, 1 );
 		} else {
 			add_filter( 'map_meta_cap', array( $this, 'map_meta_cap_non_multisite' ), 10, 4 );
@@ -34,6 +35,10 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
 		switch ( $cap ) {
 			case 'manage_cache':
+			case 'manage_networks':
+			case 'create_networks':
+			case 'delete_networks':
+			case 'delete_network':
 			case 'manage_global_users':
 				if ( ! $this->is_global_admin( $user_id ) ) {
 					$caps[] = 'do_not_allow';
@@ -61,6 +66,28 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 		return $caps;
 	}
 
+	public function user_has_networks( $networks, $user_id ) {
+		global $wpdb;
+
+		$all_networks = $wpdb->get_col( "SELECT id FROM {$wpdb->site}" );
+		if ( $this->is_global_admin( $user_id ) ) {
+			$user_networks = $all_networks;
+		} else {
+			$user_networks = array();
+			foreach ( $all_networks as $network_id ) {
+				if ( $this->is_network_admin( $user_id, $network_id ) ) {
+					$user_networks[] = (int) $network_id;
+				}
+			}
+		}
+
+		if ( empty( $user_networks ) ) {
+			$user_networks = false;
+		}
+
+		return $user_networks;
+	}
+
 	public function pre_user_query( &$user_query ) {
 		global $wpdb;
 
@@ -69,6 +96,11 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 		}
 
 		if ( 0 < absint( $user_query->query_vars['blog_id'] ) ) {
+			return;
+		}
+
+		$network_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->site}" );
+		if ( 1 >= $network_count ) {
 			return;
 		}
 
@@ -102,6 +134,16 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 
 		$user = get_user_by( 'id', $user_id );
 		return in_array( $user->user_login, $global_admins, true );
+	}
+
+	private function is_network_admin( $user_id, $network_id = null ) {
+		$network_admins = $this->get_network_admins( $network_id );
+		if ( empty( $network_admins ) ) {
+			return false;
+		}
+
+		$user = get_user_by( 'id', $user_id );
+		return $user && $user->exists() && in_array( $user->user_login, $network_admins, true );
 	}
 
 	private function get_global_admins() {
