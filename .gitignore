@@ -1,8 +1,10 @@
 # Application
 web/app/debug.log
+web/app/mu-plugins/*/
 web/app/plugins/*
 !web/app/plugins/.gitkeep
-web/app/mu-plugins/*/
+web/app/themes/*
+!web/app/themes/.gitkeep
 web/app/upgrade
 web/app/uploads/*
 !web/app/uploads/.gitkeep
