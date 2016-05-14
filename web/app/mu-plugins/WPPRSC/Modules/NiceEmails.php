@@ -154,7 +154,6 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 
 	protected function get_default_args() {
 		return array(
-			'enabled'				=> false,
 			'force_from'			=> false,
 			'default_from_prefix'	=> 'wordpress',
 			'header_image'			=> false,
