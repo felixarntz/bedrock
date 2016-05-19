@@ -24,7 +24,7 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 	}
 
 	public function content( $args = array() ) {
-		if ( isset( $args['message'] ) && ( false !== strpos( $args['message'], '</body>' ) || false !== strpos( $args['message'], '</p>' ) || false !== strpos( $args['message'], '</table>' ) ) ) {
+		if ( isset( $args['message'] ) && false === strpos( $args['message'], '</body>' ) && false === strpos( $args['message'], '</p>' ) && false === strpos( $args['message'], '</table>' ) ) {
 			$this->current_adjustment_mode = 'normal';
 
 			$template = $this->get_template();
