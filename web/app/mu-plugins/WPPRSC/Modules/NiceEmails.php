@@ -21,6 +21,9 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 		add_filter( 'wp_mail_content_type', array( $this, 'content_type' ), 1000 );
 		add_filter( 'wp_mail_from', array( $this, 'from_email' ), 1000 );
 		add_filter( 'wp_mail_from_name', array( $this, 'from_name' ), 1000 );
+
+		add_action( 'plugins_loaded', array( $this, 'handle_edd_plugin' ), 1000 );
+		add_action( 'plugins_loaded', array( $this, 'handle_give_plugin' ), 1000 );
 	}
 
 	public function content( $args = array() ) {
@@ -70,6 +73,30 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 			}
 		}
 		return $from_name;
+	}
+
+	public function handle_edd_plugin() {
+		if ( ! function_exists( 'EDD' ) ) {
+			return;
+		}
+
+		$edd = EDD();
+		$emails = $edd->emails;
+		$emails->html = false;
+		remove_action( 'edd_email_send_before', array( $emails, 'send_before' ) );
+		remove_action( 'edd_email_send_after', array( $emails, 'send_after' ) );
+	}
+
+	public function handle_give_plugin() {
+		if ( ! function_exists( 'Give' ) ) {
+			return;
+		}
+
+		$give = Give();
+		$emails = $give->emails;
+		$emails->html = false;
+		remove_action( 'give_email_send_before', array( $emails, 'send_before' ) );
+		remove_action( 'give_email_send_after', array( $emails, 'send_after' ) );
 	}
 
 	protected function setup_data( $args, $template ) {
