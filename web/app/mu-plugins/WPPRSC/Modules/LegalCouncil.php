@@ -50,7 +50,7 @@ class LegalCouncil extends \WPPRSC\ModuleAbstract {
 	public function print_cookie_notice_script() {
 		$tracking_code = '';
 		if ( class_exists( 'Yoast_GA_Options' ) ) {
-			$tracking_code = Yoast_GA_Options::instance()->get_tracking_code();
+			$tracking_code = \Yoast_GA_Options::instance()->get_tracking_code();
 		}
 
 		?>
