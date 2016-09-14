@@ -53,8 +53,6 @@ class Config extends \WPPRSC\BaseAbstract {
 
 		$this->define_constants();
 
-		$this->apply_globals();
-
 		$this->maybe_redirect_https();
 	}
 
@@ -195,12 +193,6 @@ class Config extends \WPPRSC\BaseAbstract {
 		}
 	}
 
-	protected function apply_globals() {
-		global $table_prefix;
-
-		$table_prefix = DB_PREFIX;
-	}
-
 	protected function maybe_redirect_https() {
 		if ( self::is_ssl( $this->data['server_name'] ) && 'http' === $this->data['server_protocol'] ) {
 			header( 'Location: https://' . $this->data['server_name'] . Config::get_current_path(), true, 301 );
@@ -217,7 +209,7 @@ class Config extends \WPPRSC\BaseAbstract {
 	}
 
 	protected function get_protected_constants() {
-		return array(
+		$protected_constants = array(
 			'WP_SITEURL',
 			'WP_CONTENT_DIR',
 			'WP_CONTENT_URL',
@@ -240,6 +232,16 @@ class Config extends \WPPRSC\BaseAbstract {
 			'COOKIE_DOMAIN',
 			'SUNRISE',
 		);
+
+		// prevent the MULTISITE constant from being set if we're installing Multisite via CLI
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			$wp_cli_args = \WP_CLI::get_runner()->arguments;
+			if ( array( 'core', 'multisite-install' ) == array_slice( $wp_cli_args, 0, 2 ) && ! defined( 'WPINC' ) && isset( $GLOBALS['current_blog'] ) && isset( $GLOBALS['current_site'] ) ) {
+				$protected_constants[] = 'MULTISITE';
+			}
+		}
+
+		return $protected_constants;
 	}
 
 	protected function get_default_constants() {
@@ -439,6 +441,10 @@ class Config extends \WPPRSC\BaseAbstract {
 	}
 
 	public static function get_current_domain() {
+		if ( defined( 'WP_CLI' ) && WP_CLI && ! isset( $_SERVER['HTTP_HOST'] ) ) {
+			return 'example.com';
+		}
+
 		$domain = strtolower( stripslashes( $_SERVER['HTTP_HOST'] ) );
 		if ( ':80' === substr( $domain, -3 ) ) {
 			$domain = substr( $domain, 0, -3 );
@@ -452,6 +458,10 @@ class Config extends \WPPRSC\BaseAbstract {
 	}
 
 	public static function get_current_path() {
+		if ( defined( 'WP_CLI' ) && WP_CLI && ! isset( $_SERVER['REQUEST_URI'] ) ) {
+			return '/';
+		}
+
 		return stripslashes( $_SERVER['REQUEST_URI'] );
 	}
 
@@ -463,14 +473,14 @@ class Config extends \WPPRSC\BaseAbstract {
 			return 'http';
 		}
 
-		if ( ( isset( $_SERVER['https'] ) && ! empty( $_SERVER['https'] ) && $_SERVER['https'] !== 'off' ) || $_SERVER['SERVER_PORT'] == '443' ) {
+		if ( ( isset( $_SERVER['https'] ) && ! empty( $_SERVER['https'] ) && $_SERVER['https'] !== 'off' ) || isset( $_SERVER['SERVER_PORT'] ) && $_SERVER['SERVER_PORT'] == '443' ) {
 			return 'https';
 		}
 		return 'http';
 	}
 
 	public static function get_current_port() {
-		if ( ! in_array( intval( $_SERVER['SERVER_PORT'] ), array( 80, 443 ), true ) ) {
+		if ( isset( $_SERVER['SERVER_PORT'] ) && ! in_array( intval( $_SERVER['SERVER_PORT'] ), array( 80, 443 ), true ) ) {
 			return $_SERVER['SERVER_PORT'];
 		}
 		return '';

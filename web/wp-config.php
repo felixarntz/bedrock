@@ -11,4 +11,6 @@ require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 \WPPRSC\Base\Config::instance()->run();
 
+$table_prefix = DB_PREFIX;
+
 require_once ABSPATH . 'wp-settings.php';

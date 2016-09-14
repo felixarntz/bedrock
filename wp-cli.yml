@@ -1,1 +1,4 @@
 path: web/core
+disabled_commands:
+  - core download
+  - core config

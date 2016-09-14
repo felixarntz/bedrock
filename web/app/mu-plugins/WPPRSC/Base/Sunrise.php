@@ -28,14 +28,20 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 
 		$domain = Config::get_current_domain();
 
-		$domains = array( $domain );
-		if ( 0 === strpos( $domain, 'www.' ) ) {
-			$domains[] = substr( $domain, 4 );
-		} elseif ( 1 === substr_count( $domain, '.' ) ) {
-			$domains[] = 'www.' . $domain;
+		// workaround for CLI
+		if ( 'example.com' === $domain ) {
+			$site = $this->get_default_site();
+		} else {
+			$domains = array( $domain );
+			if ( 0 === strpos( $domain, 'www.' ) ) {
+				$domains[] = substr( $domain, 4 );
+			} elseif ( 1 === substr_count( $domain, '.' ) ) {
+				$domains[] = 'www.' . $domain;
+			}
+
+			$site = $this->detect_site( $domains );
 		}
 
-		$site = $this->detect_site( $domains );
 		if ( $site ) {
 			if ( $domain !== $site->domain ) {
 				$this->redirect( $site->domain );
@@ -116,6 +122,17 @@ class Sunrise extends \WPPRSC\BaseAbstract {
 		$network = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain IN ($search_domains) AND path = '/' ORDER BY CHAR_LENGTH(domain) DESC, CHAR_LENGTH(path) DESC LIMIT 1;" );
 		if ( ! empty( $network ) && ! is_wp_error( $network ) ) {
 			return new \WP_Network( $network );
+		}
+
+		return false;
+	}
+
+	protected function get_default_site() {
+		global $wpdb;
+
+		$site = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE 1=1 ORDER BY blog_id ASC LIMIT 1;" );
+		if ( ! empty( $site ) && ! is_wp_error( $site ) ) {
+			return $site;
 		}
 
 		return false;
