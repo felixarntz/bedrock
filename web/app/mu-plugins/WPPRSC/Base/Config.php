@@ -136,6 +136,19 @@ class Config extends \WPPRSC\BaseAbstract {
 					$this->settings[ $setting ] = $this->normalize_value( $value );
 				}
 			}
+
+			$environment = $this->get_constant_setting( 'WP_ENV' );
+			if ( null !== $environment ) {
+				$environment = $this->normalize_value( $environment );
+			} else {
+				$environment = 'production';
+			}
+
+			if ( isset( $composer['extra'][ 'settings_' . $environment ] ) ) {
+				foreach ( $composer['extra'][ 'settings_' . $environment ] as $setting => $value ) {
+					$this->settings[ $setting ] = $this->normalize_value( $value );
+				}
+			}
 		}
 	}
 
