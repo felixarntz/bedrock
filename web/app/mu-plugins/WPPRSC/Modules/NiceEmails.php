@@ -129,6 +129,8 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 		$data['main_content'] = $this->prepare_content( $args['message'] );
 		$data['footer_content'] = $this->prepare_content( $this->get_setting( 'footer_content' ) );
 
+		$data['background_color'] = $this->get_setting( 'background_color' );
+
 		$data['styles'] = 'a { text-decoration: none !important; } a:hover, a:focus { text-decoration: underline !important; }';
 		if ( $this->get_setting( 'highlight_color' ) ) {
 			$data['styles'] .= ' a, a:hover, a:focus { color: ' . $this->get_setting( 'highlight_color' ) . ' !important; }';
@@ -185,6 +187,7 @@ class NiceEmails extends \WPPRSC\ModuleAbstract {
 			'default_from_prefix'	=> 'wordpress',
 			'header_image'			=> false,
 			'highlight_color'		=> '#21759b',
+			'background_color'      => '#f6f6f6',
 			'footer_content'		=> '',
 			'from_email'			=> false,
 			'from_name'				=> false,
