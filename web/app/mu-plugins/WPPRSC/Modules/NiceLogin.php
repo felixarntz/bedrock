@@ -36,7 +36,7 @@ class NiceLogin extends \WPPRSC\ModuleAbstract {
 		?>
 		<style type="text/css">
 			body {
-				color: <?php echo $background_color; ?>;
+				background-color: <?php echo $background_color; ?>;
 			}
 
 			a {
