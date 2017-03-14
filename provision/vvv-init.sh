@@ -22,6 +22,7 @@ touch ${VVV_PATH_TO_SITE}/log/access.log
 # Install and configure the latest stable version of WordPress
 if [[ ! -d "${VVV_PATH_TO_SITE}/web/core/wp-load.php" ]]; then
 	echo "Downloading WordPress and dependencies..."
+	cd ${VVV_PATH_TO_SITE}
 	noroot composer install
 
 	echo "Setting up .env file..."
@@ -44,6 +45,7 @@ if [[ ! -d "${VVV_PATH_TO_SITE}/web/core/wp-load.php" ]]; then
 	noroot wp post delete 1 --force --quiet
 else
 	echo "Updating WordPress and dependencies..."
+	cd ${VVV_PATH_TO_SITE}
 	noroot composer update
 fi
 

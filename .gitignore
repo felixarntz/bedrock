@@ -27,7 +27,8 @@ sql-dump-*.sql
 !.env.tmpl
 !.env.example
 
-# Logs
+# VVV
+vvv-nginx.conf
 log/*
 
 # Vendor (e.g. Composer)
