@@ -35,6 +35,7 @@ class GlobalAdmins extends \WPPRSC\ModuleAbstract {
 	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
 		switch ( $cap ) {
 			case 'manage_cache':
+			case 'manage_git':
 			case 'manage_networks':
 			case 'create_networks':
 			case 'delete_networks':

@@ -28,12 +28,17 @@ class NiceLogin extends \WPPRSC\ModuleAbstract {
 			}
 		}
 
+		$background_color = $this->get_setting( 'background_color' );
 		$highlight_color = $this->get_setting( 'highlight_color' );
 		$highlight_hover_color = $this->get_setting( 'highlight_hover_color' );
 		$highlight_color_rgba = $this->to_rgba( $highlight_color );
 
 		?>
 		<style type="text/css">
+			body {
+				background-color: <?php echo $background_color; ?>;
+			}
+
 			a {
 				color: <?php echo $highlight_color; ?>;
 			}
@@ -170,8 +175,9 @@ class NiceLogin extends \WPPRSC\ModuleAbstract {
 		return array(
 			'header_image'			=> false,
 			'header_image_size'		=> false,
-			'highlight_color'		=> '<?php echo $highlight_color; ?>',
+			'highlight_color'		=> '#21759b',
 			'highlight_hover_color'	=> '#006799',
+			'background_color'      => '#f1f1f1',
 		);
 	}
 }
