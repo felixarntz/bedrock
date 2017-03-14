@@ -27,6 +27,9 @@ sql-dump-*.sql
 !.env.tmpl
 !.env.example
 
+# Logs
+log/*
+
 # Vendor (e.g. Composer)
 composer.lock
 vendor/*
@@ -38,9 +41,6 @@ node_modules
 # Vagrant
 bin
 .vagrant
-
-# Logs
-log/*
 
 # IDEs
 *.pydevproject
